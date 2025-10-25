@@ -1,11 +1,16 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+/* Tailwind v4 core */
+@import 'tailwindcss';
 
+/* Optional: only uncomment if you've installed it (npm i tw-animate-css)
+@import "tw-animate-css";
+*/
+
+/* Tailwind v4 dark variant + theme tokens */
 @custom-variant dark (&:is(.dark *));
 
 :root {
   /* Primary Blue Palette */
-  --primary-dark: oklch(0.25 0.15 250);
+  /* --primary-dark: oklch(0.25 0.15 250) */
   --primary-main: oklch(0.45 0.2 250);
   --primary-light: oklch(0.65 0.18 250);
 
@@ -43,6 +48,8 @@
   --chart-4: oklch(0.45 0.22 250);
   --chart-5: oklch(0.65 0.16 260);
   --radius: 0.625rem;
+
+  /* Sidebar */
   --sidebar: oklch(0.98 0.001 0);
   --sidebar-foreground: oklch(0.15 0.01 0);
   --sidebar-primary: var(--primary-main);
@@ -57,28 +64,36 @@
   --background: oklch(0.12 0.01 0);
   --surface: oklch(0.18 0.01 0);
   --foreground: oklch(0.95 0.001 0);
+
   --card: oklch(0.18 0.01 0);
   --card-foreground: oklch(0.95 0.001 0);
   --popover: oklch(0.18 0.01 0);
   --popover-foreground: oklch(0.95 0.001 0);
+
   --primary: var(--primary-light);
   --primary-foreground: oklch(0.12 0.01 0);
   --secondary: var(--secondary-light);
   --secondary-foreground: oklch(0.12 0.01 0);
+
   --muted: oklch(0.3 0.01 0);
   --muted-foreground: oklch(0.65 0.01 0);
+
   --accent: oklch(0.7 0.2 250);
   --accent-foreground: oklch(0.12 0.01 0);
+
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.95 0.001 0);
+
   --border: oklch(0.25 0.01 0);
   --input: oklch(0.22 0.01 0);
   --ring: var(--primary-light);
+
   --chart-1: oklch(0.65 0.18 250);
   --chart-2: oklch(0.6 0.16 260);
   --chart-3: oklch(0.7 0.14 240);
   --chart-4: oklch(0.55 0.2 250);
   --chart-5: oklch(0.75 0.15 260);
+
   --sidebar: oklch(0.15 0.01 0);
   --sidebar-foreground: oklch(0.95 0.001 0);
   --sidebar-primary: var(--primary-light);
@@ -89,9 +104,11 @@
   --sidebar-ring: var(--primary-light);
 }
 
+/* Tailwind v4 tokens */
 @theme inline {
-  --font-sans: "Geist", "Geist Fallback";
-  --font-mono: "Geist Mono", "Geist Mono Fallback";
+  --font-sans: 'Geist', 'Geist Fallback';
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -111,15 +128,18 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -139,75 +159,68 @@
   }
 }
 
+/* --- Utilities --- */
+/* Keep this utility for your own usage (not @applied elsewhere) */
 @layer utilities {
-  /* Added smooth animations and transitions */
   .transition-smooth {
     @apply transition-all duration-300 ease-in-out;
   }
+}
 
-  .transition-fast {
-    @apply transition-all duration-150 ease-in-out;
-  }
-
-  /* Added glassmorphism effect */
+/* All other utilities expand transition-smooth inline to avoid @apply errors */
+@layer utilities {
+  /* Glassmorphism */
   .glass {
     @apply bg-white/10 backdrop-blur-md border border-white/20;
   }
-
   .glass-dark {
     @apply bg-black/10 backdrop-blur-md border border-black/20;
   }
 
-  /* Added blue glow effects */
+  /* Glow */
   .glow-primary {
     @apply shadow-lg shadow-primary/20;
   }
-
   .glow-primary-hover {
-    @apply hover:shadow-lg hover:shadow-primary/30 transition-smooth;
+    @apply hover:shadow-lg hover:shadow-primary/30 transition-all duration-300 ease-in-out;
   }
-
   .glow-accent {
     @apply shadow-lg shadow-accent/20;
   }
 
-  /* Added hover effects */
+  /* Hover effects */
   .hover-lift {
-    @apply hover:-translate-y-1 transition-smooth;
+    @apply hover:-translate-y-1 transition-all duration-300 ease-in-out;
   }
-
   .hover-scale {
-    @apply hover:scale-105 transition-smooth;
+    @apply hover:scale-105 transition-all duration-300 ease-in-out;
   }
 
-  /* Added focus states */
+  /* Focus */
   .focus-ring {
     @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2;
   }
-
   .focus-ring-dark {
     @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-background;
   }
 
-  /* Added text utilities */
+  /* Text utilities */
   .text-balance {
     text-wrap: balance;
   }
-
   .text-pretty {
     text-wrap: pretty;
   }
 
-  /* Added gradient backgrounds */
+  /* Gradients */
   .gradient-primary {
     @apply bg-gradient-to-r from-primary to-accent;
   }
-
   .gradient-secondary {
     @apply bg-gradient-to-r from-secondary to-primary;
   }
 
-  /* Added animation utilities */
+  /* Keyframes */
   @keyframes fade-in {
     from {
       opacity: 0;
@@ -216,7 +229,6 @@
       opacity: 1;
     }
   }
-
   @keyframes slide-in-up {
     from {
       opacity: 0;
@@ -227,7 +239,6 @@
       transform: translateY(0);
     }
   }
-
   @keyframes slide-in-down {
     from {
       opacity: 0;
@@ -238,7 +249,6 @@
       transform: translateY(0);
     }
   }
-
   @keyframes pulse-glow {
     0%,
     100% {
@@ -252,31 +262,26 @@
   .animate-fade-in {
     animation: fade-in 0.3s ease-in-out;
   }
-
   .animate-slide-in-up {
     animation: slide-in-up 0.4s ease-out;
   }
-
   .animate-slide-in-down {
     animation: slide-in-down 0.4s ease-out;
   }
-
   .animate-pulse-glow {
     animation: pulse-glow 2s ease-in-out infinite;
   }
 
-  /* Added card hover effects */
+  /* Card & Button interactions */
   .card-hover {
-    @apply hover:shadow-lg hover:border-primary/50 transition-smooth;
+    @apply hover:shadow-lg hover:border-primary/50 transition-all duration-300 ease-in-out;
   }
-
-  /* Added button hover effects */
   .btn-hover {
-    @apply hover:shadow-md hover:shadow-primary/30 transition-smooth;
+    @apply hover:shadow-md hover:shadow-primary/30 transition-all duration-300 ease-in-out;
   }
 
-  /* Added input focus effects */
+  /* Inputs */
   .input-focus {
-    @apply focus:ring-2 focus:ring-primary focus:ring-offset-0 focus:border-primary transition-smooth;
+    @apply focus:ring-2 focus:ring-primary focus:ring-offset-0 focus:border-primary transition-all duration-300 ease-in-out;
   }
 }

@@ -1,63 +1,71 @@
-"use client"
+'use client';
 
-import { useEffect, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { CheckCircle2, AlertCircle, Clock } from "lucide-react"
-import type { ReindexJob } from "@/lib/types"
+import { useEffect, useState } from 'react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { CheckCircle2, AlertCircle, Clock } from 'lucide-react';
+import type { ReindexJob } from '@/lib/types';
 
 export function ReindexHistory() {
-  const [jobs, setJobs] = useState<ReindexJob[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [jobs, setJobs] = useState<ReindexJob[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const response = await fetch("/api/reindex/history")
+        const response = await fetch('/api/reindex/history');
         if (response.ok) {
-          const data = await response.json()
-          setJobs(data)
+          const data = await response.json();
+          setJobs(data);
         }
       } catch (error) {
-        console.error("Failed to fetch reindex history:", error)
+        console.error('Failed to fetch reindex history:', error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchHistory()
-  }, [])
+    fetchHistory();
+  }, []);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "completed":
-        return <CheckCircle2 className="h-5 w-5 text-green-600" />
-      case "failed":
-        return <AlertCircle className="h-5 w-5 text-red-600" />
-      case "in_progress":
-        return <Clock className="h-5 w-5 text-blue-600" />
+      case 'completed':
+        return <CheckCircle2 className="h-5 w-5 text-green-600" />;
+      case 'failed':
+        return <AlertCircle className="h-5 w-5 text-red-600" />;
+      case 'in_progress':
+        return <Clock className="h-5 w-5 text-blue-600" />;
       default:
-        return <Clock className="h-5 w-5 text-yellow-600" />
+        return <Clock className="h-5 w-5 text-yellow-600" />;
     }
-  }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "completed":
-        return "text-green-600"
-      case "failed":
-        return "text-red-600"
-      case "in_progress":
-        return "text-blue-600"
+      case 'completed':
+        return 'text-green-600';
+      case 'failed':
+        return 'text-red-600';
+      case 'in_progress':
+        return 'text-blue-600';
       default:
-        return "text-yellow-600"
+        return 'text-yellow-600';
     }
-  }
+  };
 
   return (
     <Card className="border border-border">
       <CardHeader>
         <CardTitle>Re-index History</CardTitle>
-        <CardDescription>Recent document re-indexing operations</CardDescription>
+        <CardDescription>
+          Recent document re-indexing operations
+        </CardDescription>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -67,18 +75,29 @@ export function ReindexHistory() {
         ) : jobs.length > 0 ? (
           <div className="space-y-3">
             {jobs.map((job) => (
-              <div key={job.id} className="p-4 rounded-lg border border-border hover:border-primary/50 transition">
+              <div
+                key={job.id}
+                className="p-4 rounded-lg border border-border hover:border-primary/50 transition"
+              >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
                     {getStatusIcon(job.status)}
                     <div>
-                      <p className="font-medium text-foreground capitalize">{job.status.replace("_", " ")}</p>
+                      <p className="font-medium text-foreground capitalize">
+                        {job.status.replace('_', ' ')}
+                      </p>
                       <p className="text-xs text-muted-foreground">
-                        {job.startedAt.toLocaleDateString()} at {job.startedAt.toLocaleTimeString()}
+                        {job.startedAt.toString()} at {job.startedAt.toString()}
                       </p>
                     </div>
                   </div>
-                  <span className={`text-sm font-semibold ${getStatusColor(job.status)}`}>{job.progress}%</span>
+                  <span
+                    className={`text-sm font-semibold ${getStatusColor(
+                      job.status
+                    )}`}
+                  >
+                    {job.progress}%
+                  </span>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3 text-sm">
@@ -90,12 +109,20 @@ export function ReindexHistory() {
                   </div>
                   <div>
                     <p className="text-muted-foreground">Failed</p>
-                    <p className="font-semibold text-foreground">{job.failedDocuments}</p>
+                    <p className="font-semibold text-foreground">
+                      {job.failedDocuments}
+                    </p>
                   </div>
                   <div>
                     <p className="text-muted-foreground">Duration</p>
                     <p className="font-semibold text-foreground">
-                      {job.completedAt ? Math.round((job.completedAt.getTime() - job.startedAt.getTime()) / 1000) : "—"}
+                      {/* {job.completedAt
+                        ? Math.round(
+                            (job.completedAt.getTime() -
+                              job.startedAt.getTime()) /
+                              1000
+                          )
+                        : '—'} */}
                       s
                     </p>
                   </div>
@@ -103,7 +130,9 @@ export function ReindexHistory() {
 
                 {job.errorMessage && (
                   <div className="mt-3 p-2 rounded bg-destructive/10 border border-destructive/50">
-                    <p className="text-xs text-destructive">{job.errorMessage}</p>
+                    <p className="text-xs text-destructive">
+                      {job.errorMessage}
+                    </p>
                   </div>
                 )}
               </div>
@@ -116,5 +145,5 @@ export function ReindexHistory() {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }
