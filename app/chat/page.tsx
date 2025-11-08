@@ -102,29 +102,29 @@ export default function ChatPage() {
     // Call backend proxy for a real assistant reply
     try {
       const proxyUrl = (process.env.NEXT_PUBLIC_API_PROXY_URL as string) || "http://localhost:8000"
-      const resp = await fetch(`${proxyUrl}/api/chat`, {
+      const resp = await fetch(`${proxyUrl}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          prompt: userMessage.content,
-          model,
+          // message: userMessage.content,
+          // model,
           max_tokens: maxTokens,
           temperature,
-          system_prompt: systemPrompt,
+          conversation_id: "aa",
+          message: userMessage.content,
         }),
       })
-
-      if (!resp.ok) {
-        const text = await resp.text()
-        console.error("Proxy returned non-OK:", resp.status, text)
-        throw new Error(`Proxy error: ${resp.status}`)
-      }
+      // if (!resp.ok) {
+      //   const text = await resp
+      //   console.error("Proxy returned non-OK:", resp.status, text)
+      //   throw new Error(`Proxy error: ${resp.status}`)
+      // }
 
       const data = await resp.json()
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: data.reply || "",
+        content: data.response || "",
       }
 
       setMessages((prev) => [...prev, assistantMessage])
