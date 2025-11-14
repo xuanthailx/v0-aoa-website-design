@@ -21,6 +21,20 @@ interface Message {
     source: string
     relevance: number
   }>
+  sources?: Array<{
+    file_path: string
+    file_name: string
+    file_type: string
+    relevance_score: number
+    content_preview: string
+  }>
+  metadata?: {
+    retrieved_documents: number
+    timestamp: string
+    model: string
+    temperature: number
+    max_tokens: number
+  }
   isStreaming?: boolean
 }
 
@@ -38,6 +52,60 @@ export default function ChatPage() {
       role: "assistant",
       content:
         "Hello! I'm your AI assistant. Upload a document to get started, or ask me anything about your documents.",
+    },
+    {
+      id: "2",
+      role: "user",
+      content: "How do I install ChromaDB?",
+    },
+    {
+      id: "3",
+      role: "assistant",
+      content: "To install ChromaDB based on the provided documents, you can follow these instructions:\n\n1. **Basic Installation**: You can add ChromaDB to your project by including it in your `requirements.txt` file using the following line:\n   ```\n   chromadb>=0.4.0\n   ```\n\n2. **Optional Server Integration**: If you want to install the server integration, you can run the following command:\n   ```\n   pip install \"chromadb[server]\"\n   ```\n\nThese steps will set up ChromaDB for use in your project. You can refer to Document 2 for these installation details.",
+      sources: [
+        {
+          file_path: "documents/Architecture.md",
+          file_name: "Architecture.md",
+          file_type: ".md",
+          relevance_score: -0.287,
+          content_preview: "## 🔄 Quy Trình Hoạt Động Chi Tiết\n\n### Phase 1: Khởi Động & Load Documents\n\n```mermaid\ngraph TD\n    A[Start Application] --> B[Load .env Config]\n    B --> C[Initialize Services]\n    C --> D{AUTO_LOAD_..."
+        },
+        {
+          file_path: "documents/Chromadb_guide.txt",
+          file_name: "Chromadb_guide.txt",
+          file_type: ".txt",
+          relevance_score: -0.301,
+          content_preview: "Or in requirements.txt:\n    chromadb>=0.4.0\n\nOptional: install server integration:\n    pip install \"chromadb[server]\"\n\n3. Basic Usage (Python Example)\n-------------------------------\nimport chromadb\n\n..."
+        },
+        {
+          file_path: "documents/Chromadb_guide.txt",
+          file_name: "Chromadb_guide.txt",
+          file_type: ".txt",
+          relevance_score: -0.339,
+          content_preview: "import chromadb\nclient = chromadb.PersistentClient(path=\"./chroma_db\")\n\nThis creates a local folder (chroma_db/) containing your vector data.\n\n5. Using Chroma as a Server\n---------------------------\nR..."
+        },
+        {
+          file_path: "documents/Chromadb_guide.txt",
+          file_name: "Chromadb_guide.txt",
+          file_type: ".txt",
+          relevance_score: -0.353,
+          content_preview: "# Add and search data\ndb.add_texts([\"RAG improves LLM accuracy using external data.\"])\ndocs = db.similarity_search(\"What is RAG?\")\nprint(docs[0].page_content)\n\n7. Maintenance Commands\n----------------..."
+        },
+        {
+          file_path: "documents/Chromadb_guide.txt",
+          file_name: "Chromadb_guide.txt",
+          file_type: ".txt",
+          relevance_score: -0.365,
+          content_preview: "========================================\n         ChromaDB Quick Start Guide\n========================================\n\nThis guide helps new developers understand and use ChromaDB,\na lightweight and po..."
+        }
+      ],
+      metadata: {
+        retrieved_documents: 5,
+        timestamp: "2025-11-14T14:20:43.480580",
+        model: "GPT-4o-mini",
+        temperature: 0.7,
+        max_tokens: 500
+      }
     },
   ])
   const [input, setInput] = useState("")
@@ -102,29 +170,31 @@ export default function ChatPage() {
     // Call backend proxy for a real assistant reply
     try {
       const proxyUrl = (process.env.NEXT_PUBLIC_API_PROXY_URL as string) || "http://localhost:8000"
-      const resp = await fetch(`${proxyUrl}/chat`, {
+      const resp = await fetch(`${proxyUrl}/api/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          // message: userMessage.content,
-          // model,
+          prompt: userMessage.content,
+          model,
           max_tokens: maxTokens,
           temperature,
-          conversation_id: "aa",
-          message: userMessage.content,
+          system_prompt: systemPrompt,
         }),
       })
-      // if (!resp.ok) {
-      //   const text = await resp
-      //   console.error("Proxy returned non-OK:", resp.status, text)
-      //   throw new Error(`Proxy error: ${resp.status}`)
-      // }
+
+      if (!resp.ok) {
+        const text = await resp.text()
+        console.error("Proxy returned non-OK:", resp.status, text)
+        throw new Error(`Proxy error: ${resp.status}`)
+      }
 
       const data = await resp.json()
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: data.response || "",
+        content: data.response || data.reply || "",
+        sources: data.sources || [],
+        metadata: data.metadata || undefined,
       }
 
       setMessages((prev) => [...prev, assistantMessage])
@@ -238,6 +308,89 @@ export default function ChatPage() {
                           isUser={message.role === "user"}
                         />
                       </div>
+                      
+                      {/* Sources Section */}
+                      {message.sources && message.sources.length > 0 && (
+                        <div className="mt-4 space-y-2">
+                          <div className="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span>Sources ({message.sources.length})</span>
+                          </div>
+                          <div className="space-y-2">
+                            {message.sources.map((source, idx) => (
+                              <div
+                                key={idx}
+                                className="group relative rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 shadow-sm hover:shadow-md transition-all cursor-pointer"
+                              >
+                                <div className="flex items-start gap-3">
+                                  {/* File Icon */}
+                                  <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-gradient-to-br from-violet-500/10 to-purple-500/10 flex items-center justify-center">
+                                    <svg className="h-5 w-5 text-violet-600 dark:text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                                    </svg>
+                                  </div>
+                                  
+                                  <div className="flex-1 min-w-0">
+                                    {/* File Name */}
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+                                        {source.file_name}
+                                      </h4>
+                                      <span className="flex-shrink-0 inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300">
+                                        {source.file_type}
+                                      </span>
+                                    </div>
+                                    
+                                    {/* File Path */}
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 truncate">
+                                      {source.file_path}
+                                    </p>
+                                    
+                                    {/* Content Preview */}
+                                    <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2 mb-2">
+                                      {source.content_preview}
+                                    </p>
+                                    
+                                    {/* Relevance Score */}
+                                    <div className="flex items-center gap-2">
+                                      <div className="flex items-center gap-1">
+                                        <svg className="h-3.5 w-3.5 text-amber-500" fill="currentColor" viewBox="0 0 20 20">
+                                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                        </svg>
+                                        <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                                          Relevance: {Math.abs(source.relevance_score).toFixed(3)}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          
+                          {/* Metadata
+                          {message.metadata && (
+                            <div className="mt-3 px-3 py-2 rounded-lg bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
+                                <span className="flex items-center gap-1">
+                                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                                  </svg>
+                                  <span className="font-medium">{message.metadata.model}</span>
+                                </span>
+                                <span>•</span>
+                                <span>{message.metadata.retrieved_documents} docs</span>
+                                <span>•</span>
+                                <span>Temp: {message.metadata.temperature}</span>
+                                <span>•</span>
+                                <span>Max tokens: {message.metadata.max_tokens}</span>
+                              </div>
+                            </div>
+                          )} */}
+                        </div>
+                      )}
                     </div>
 
                     {message.role === "user" && (
