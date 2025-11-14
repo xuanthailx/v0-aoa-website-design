@@ -174,11 +174,12 @@ export default function ChatPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          prompt: userMessage.content,
-          model,
+          // message: userMessage.content,
+          // model,
           max_tokens: maxTokens,
           temperature,
-          system_prompt: systemPrompt,
+          conversation_id: "aa",
+          message: userMessage.content,
         }),
       })
 
@@ -189,11 +190,26 @@ export default function ChatPage() {
       }
 
       const data = await resp.json()
+      
+      // Remove duplicate sources based on file_path
+      const uniqueSources = data.sources ? 
+        Array.from(
+          new Map(
+            data.sources.map((source: any) => [source.file_path, source])
+          ).values()
+        ) as Array<{
+          file_path: string
+          file_name: string
+          file_type: string
+          relevance_score: number
+          content_preview: string
+        }> : []
+      
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
         content: data.response || data.reply || "",
-        sources: data.sources || [],
+        sources: uniqueSources,
         metadata: data.metadata || undefined,
       }
 
