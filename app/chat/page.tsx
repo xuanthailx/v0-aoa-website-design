@@ -69,34 +69,6 @@ export default function ChatPage() {
           file_type: ".md",
           relevance_score: -0.287,
           content_preview: "## 🔄 Quy Trình Hoạt Động Chi Tiết\n\n### Phase 1: Khởi Động & Load Documents\n\n```mermaid\ngraph TD\n    A[Start Application] --> B[Load .env Config]\n    B --> C[Initialize Services]\n    C --> D{AUTO_LOAD_..."
-        },
-        {
-          file_path: "documents/Chromadb_guide.txt",
-          file_name: "Chromadb_guide.txt",
-          file_type: ".txt",
-          relevance_score: -0.301,
-          content_preview: "Or in requirements.txt:\n    chromadb>=0.4.0\n\nOptional: install server integration:\n    pip install \"chromadb[server]\"\n\n3. Basic Usage (Python Example)\n-------------------------------\nimport chromadb\n\n..."
-        },
-        {
-          file_path: "documents/Chromadb_guide.txt",
-          file_name: "Chromadb_guide.txt",
-          file_type: ".txt",
-          relevance_score: -0.339,
-          content_preview: "import chromadb\nclient = chromadb.PersistentClient(path=\"./chroma_db\")\n\nThis creates a local folder (chroma_db/) containing your vector data.\n\n5. Using Chroma as a Server\n---------------------------\nR..."
-        },
-        {
-          file_path: "documents/Chromadb_guide.txt",
-          file_name: "Chromadb_guide.txt",
-          file_type: ".txt",
-          relevance_score: -0.353,
-          content_preview: "# Add and search data\ndb.add_texts([\"RAG improves LLM accuracy using external data.\"])\ndocs = db.similarity_search(\"What is RAG?\")\nprint(docs[0].page_content)\n\n7. Maintenance Commands\n----------------..."
-        },
-        {
-          file_path: "documents/Chromadb_guide.txt",
-          file_name: "Chromadb_guide.txt",
-          file_type: ".txt",
-          relevance_score: -0.365,
-          content_preview: "========================================\n         ChromaDB Quick Start Guide\n========================================\n\nThis guide helps new developers understand and use ChromaDB,\na lightweight and po..."
         }
       ],
       metadata: {
@@ -121,14 +93,8 @@ export default function ChatPage() {
       id: "session_1",
       title: "Getting Started",
       createdAt: new Date(Date.now() - 86400000),
-      messageCount: 12,
-    },
-    {
-      id: "session_2",
-      title: "API Documentation",
-      createdAt: new Date(Date.now() - 172800000),
-      messageCount: 8,
-    },
+      messageCount: 1,
+    }
   ])
   const [currentSessionId, setCurrentSessionId] = useState("session_1")
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -166,19 +132,18 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, userMessage])
     setInput("")
     setIsLoading(true)
+    setChatSessions(prev => prev.map((session: ChatSession) => session.id===currentSessionId ? {...session, messageCount: session.messageCount++} : session));
 
     // Call backend proxy for a real assistant reply
     try {
       const proxyUrl = (process.env.NEXT_PUBLIC_API_PROXY_URL as string) || "http://localhost:8000"
-      const resp = await fetch(`${proxyUrl}/api/chat`, {
+      const resp = await fetch(`${proxyUrl}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          // message: userMessage.content,
-          // model,
-          max_tokens: maxTokens,
+          //max_tokens: maxTokens,
           temperature,
-          conversation_id: "aa",
+          conversation_id: currentSessionId,
           message: userMessage.content,
         }),
       })
