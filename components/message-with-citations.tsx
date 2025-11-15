@@ -91,8 +91,8 @@ export function MessageWithCitations({
       <div
         className={`max-w-md lg:max-w-xl px-4 py-3 rounded-lg relative ${
           isUser
-            ? 'bg-primary text-primary-foreground rounded-br-none'
-            : 'bg-card border border-border text-foreground rounded-bl-none'
+            ? 'bg-primary text-primary-foreground'
+            : 'bg-card border border-border text-foreground'
         }`}
       >
         {/* Actions: copy */}
@@ -112,7 +112,7 @@ export function MessageWithCitations({
 
         <div
           style={{
-            marginTop: '20px',
+            marginTop: !isUser ? '20px' : '0',
           }}
           className="prose max-w-none text-sm leading-relaxed pr-10"
           dangerouslySetInnerHTML={{

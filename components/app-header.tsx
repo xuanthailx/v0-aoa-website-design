@@ -1,37 +1,37 @@
-"use client"
+'use client';
 
-import { useAuth } from "@/lib/auth-context"
-import { RoleBadge } from "./role-badge"
-import { Button } from "@/components/ui/button"
-import { LogOut, Menu } from "lucide-react"
-import Link from "next/link"
-import { useState } from "react"
+import { useAuth } from '@/lib/auth-context';
+import { RoleBadge } from './role-badge';
+import { Button } from '@/components/ui/button';
+import { LogOut, Menu } from 'lucide-react';
+import Link from 'next/link';
+import { useState } from 'react';
 
 export function AppHeader() {
-  const { user, logout } = useAuth()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { user, logout } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const getNavItems = () => {
-    if (!user) return []
+    if (!user) return [];
 
     const baseItems = [
-      { label: "Chat", href: "/chat" },
-      { label: "Knowledge Base", href: "/knowledge-base" },
-    ]
+      { label: 'Chat', href: '/chat' },
+      { label: 'Knowledge Base', href: '/knowledge-base' },
+    ];
 
-    if (user.role === "admin") {
+    if (user.role === 'admin') {
       return [
         ...baseItems,
-        { label: "Analytics", href: "/analytics" },
-        { label: "Users", href: "/admin/users" },
-        { label: "Settings", href: "/settings" },
-      ]
+        { label: 'Analytics', href: '/analytics' },
+        { label: 'Users', href: '/admin/users' },
+        { label: 'Settings', href: '/settings' },
+      ];
     }
 
-    return [...baseItems, { label: "Settings", href: "/settings" }]
-  }
+    return [...baseItems, { label: 'Settings', href: '/settings' }];
+  };
 
-  const navItems = getNavItems()
+  const navItems = getNavItems();
 
   return (
     <header className="border-b border-border bg-background sticky top-0 z-50">
@@ -40,9 +40,13 @@ export function AppHeader() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">O</span>
+              <span className="text-primary-foreground font-bold text-lg">
+                O
+              </span>
             </div>
-            <span className="font-bold text-lg hidden sm:inline">OnboardAI</span>
+            <span className="font-bold text-lg hidden sm:inline">
+              OnboardAI
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -62,13 +66,20 @@ export function AppHeader() {
           <div className="flex items-center gap-4">
             {user && (
               <>
-                <div className="hidden sm:flex items-center gap-2">
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-foreground">{user.name}</p>
+                <div className="hidden sm:flex items-center gap-2 flex-row">
+                  <div className="text-right flex-row flex gap-2">
+                    <p className="text-sm font-medium text-foreground">
+                      {user.name}
+                    </p>
                     <RoleBadge role={user.role} size="sm" />
                   </div>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => logout()} className="gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => logout()}
+                  className="gap-2"
+                >
                   <LogOut className="h-4 w-4" />
                   <span className="hidden sm:inline">Logout</span>
                 </Button>
@@ -101,5 +112,5 @@ export function AppHeader() {
         )}
       </div>
     </header>
-  )
+  );
 }

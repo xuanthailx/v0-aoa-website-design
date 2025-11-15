@@ -46,42 +46,54 @@ interface ChatSession {
 }
 
 export default function ChatPage() {
-  const [messages, setMessages] = useState<Message[]>([
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([
     {
-      id: '1',
-      role: 'assistant',
-      content:
-        "Hello! I'm your AI assistant. Upload a document to get started, or ask me anything about your documents.",
-    },
-    {
-      id: '2',
-      role: 'user',
-      content: 'How do I install ChromaDB?',
-    },
-    {
-      id: '3',
-      role: 'assistant',
-      content:
-        'To install ChromaDB based on the provided documents, you can follow these instructions:\n\n1. **Basic Installation**: You can add ChromaDB to your project by including it in your `requirements.txt` file using the following line:\n   ```\n   chromadb>=0.4.0\n   ```\n\n2. **Optional Server Integration**: If you want to install the server integration, you can run the following command:\n   ```\n   pip install "chromadb[server]"\n   ```\n\nThese steps will set up ChromaDB for use in your project. You can refer to Document 2 for these installation details.',
-      sources: [
-        {
-          file_path: 'documents/Architecture.md',
-          file_name: 'Architecture.md',
-          file_type: '.md',
-          relevance_score: -0.287,
-          content_preview:
-            '## 🔄 Quy Trình Hoạt Động Chi Tiết\n\n### Phase 1: Khởi Động & Load Documents\n\n```mermaid\ngraph TD\n    A[Start Application] --> B[Load .env Config]\n    B --> C[Initialize Services]\n    C --> D{AUTO_LOAD_...',
-        },
-      ],
-      metadata: {
-        retrieved_documents: 5,
-        timestamp: '2025-11-14T14:20:43.480580',
-        model: 'GPT-4o-mini',
-        temperature: 0.7,
-        max_tokens: 500,
-      },
+      id: 'session_1',
+      title: 'Getting Started',
+      createdAt: new Date(Date.now() - 86400000),
+      messageCount: 3,
     },
   ]);
+  const [currentSessionId, setCurrentSessionId] = useState('session_1');
+  const [chatHistory, setChatHistory] = useState<Record<string, Message[]>>({
+    session_1: [
+      {
+        id: '1',
+        role: 'assistant',
+        content:
+          "Hello! I'm your AI assistant. Upload a document to get started, or ask me anything about your documents.",
+      },
+      {
+        id: '2',
+        role: 'user',
+        content: 'How do I install ChromaDB?',
+      },
+      {
+        id: '3',
+        role: 'assistant',
+        content:
+          'To install ChromaDB based on the provided documents, you can follow these instructions:\n\n1. **Basic Installation**: You can add ChromaDB to your project by including it in your `requirements.txt` file using the following line:\n   ```\n   chromadb>=0.4.0\n   ```\n\n2. **Optional Server Integration**: If you want to install the server integration, you can run the following command:\n   ```\n   pip install "chromadb[server]"\n   ```\n\nThese steps will set up ChromaDB for use in your project. You can refer to Document 2 for these installation details.',
+        sources: [
+          {
+            file_path: 'documents/Architecture.md',
+            file_name: 'Architecture.md',
+            file_type: '.md',
+            relevance_score: -0.287,
+            content_preview:
+              '## 🔄 Quy Trình Hoạt Động Chi Tiết\n\n### Phase 1: Khởi Động & Load Documents\n\n```mermaid\ngraph TD\n    A[Start Application] --> B[Load .env Config]\n    B --> C[Initialize Services]\n    C --> D{AUTO_LOAD_...',
+          },
+        ],
+        metadata: {
+          retrieved_documents: 5,
+          timestamp: '2025-11-14T14:20:43.480580',
+          model: 'GPT-4o-mini',
+          temperature: 0.7,
+          max_tokens: 500,
+        },
+      },
+    ],
+  });
+  const [messages, setMessages] = useState<Message[]>(chatHistory.session_1);
   const [input, setInput] = useState('');
   const [model, setModel] = useState('gpt-4o-mini');
   const [maxTokens, setMaxTokens] = useState<number>(500);
@@ -92,15 +104,6 @@ export default function ChatPage() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [chatSessions, setChatSessions] = useState<ChatSession[]>([
-    {
-      id: 'session_1',
-      title: 'Getting Started',
-      createdAt: new Date(Date.now() - 86400000),
-      messageCount: 1,
-    },
-  ]);
-  const [currentSessionId, setCurrentSessionId] = useState('session_1');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when messages change
@@ -109,6 +112,16 @@ export default function ChatPage() {
       scrollRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
+
+  // Save messages to chat history when they change
+  useEffect(() => {
+    if (currentSessionId && messages.length > 0) {
+      setChatHistory(prev => ({
+        ...prev,
+        [currentSessionId]: messages
+      }));
+    }
+  }, [messages, currentSessionId]);
 
   const handleSendMessage = async () => {
     setFormError(null);
@@ -207,7 +220,36 @@ export default function ChatPage() {
     }
   };
 
+  const handleSelectSession = (sessionId: string) => {
+    // Save current messages to history before switching
+    if (currentSessionId && messages.length > 0) {
+      setChatHistory(prev => ({
+        ...prev,
+        [currentSessionId]: messages
+      }));
+    }
+    
+    // Switch to selected session
+    setCurrentSessionId(sessionId);
+    const sessionMessages = chatHistory[sessionId] || [
+      {
+        id: '1',
+        role: 'assistant',
+        content: "Hello! I'm your AI assistant. How can I help you today?",
+      },
+    ];
+    setMessages(sessionMessages);
+  };
+
   const handleNewChat = () => {
+    // Save current messages to history before creating new chat
+    if (currentSessionId && messages.length > 0) {
+      setChatHistory(prev => ({
+        ...prev,
+        [currentSessionId]: messages
+      }));
+    }
+
     const newSession: ChatSession = {
       id: `session_${Date.now()}`,
       title: 'New Chat',
@@ -270,7 +312,7 @@ export default function ChatPage() {
           <ChatHistorySidebar
             sessions={chatSessions}
             currentSessionId={currentSessionId}
-            onSelectSession={setCurrentSessionId}
+            onSelectSession={handleSelectSession}
             onNewChat={handleNewChat}
             onDeleteSession={handleDeleteSession}
           />
